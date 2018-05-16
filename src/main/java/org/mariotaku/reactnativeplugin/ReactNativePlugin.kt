@@ -84,7 +84,7 @@ class ReactNativePlugin : Plugin<Project> {
                     it.workingDir(reactRoot)
 
                     // Set up dev mode
-                    val devEnabled = targetName.contains("release", ignoreCase = true).toString()
+                    val devEnabled = buildTypeName.equals("debug", ignoreCase = true).toString()
 
                     var extraArgs = extraPackagerArgs
 

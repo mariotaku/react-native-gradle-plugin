@@ -32,7 +32,7 @@ publishing {
         maven(MavenPublication) {
             groupId 'com.github.mariotaku'
             artifactId 'react-native-gradle-plugin'
-            version '0.0.1'
+            version '0.0.2'
 
             from components.java
         }
