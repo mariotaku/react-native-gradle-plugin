@@ -55,7 +55,7 @@ class ReactNativePlugin : Plugin<Project> {
                 val nodeExecutableAndArgs = config.nodeExecutableAndArgs ?: arrayOf("node")
                 val extraPackagerArgs = config.extraPackagerArgs ?: arrayOf()
 
-                android.sourceSets.maybeCreate(buildVariant.camelCaseName).also {
+                android.sourceSets.maybeCreate(buildVariant.camelCaseName(buildTypeName)).also {
                     it.assets.srcDir(jsBundleDir)
                     it.res.srcDir(resourcesDir)
                 }
