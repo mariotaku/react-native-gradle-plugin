@@ -5,6 +5,7 @@ import org.apache.tools.ant.taskdefs.condition.Os
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.logging.LogLevel
 import org.gradle.api.tasks.TaskContainer
 import org.mariotaku.reactnativeplugin.model.FlavorScope
 
@@ -66,6 +67,9 @@ class ReactNativePlugin : Plugin<Project> {
                     it.jsBundleDir = jsBundleDir
                     it.resourcesDir = resourcesDir
 
+                    it.standardOutput = LogOutputStream(project.logger, LogLevel.INFO)
+                    it.errorOutput = LogOutputStream(project.logger, LogLevel.ERROR)
+
                     it.doFirst {
                         // Create dirs if they are not there (e.g. the "clean" task just ran)
                         jsBundleDir.mkdirs()
@@ -74,9 +78,9 @@ class ReactNativePlugin : Plugin<Project> {
 
 
                     // Set up inputs and outputs so gradle can cache the result
-                    it.inputs.files(project.fileTree(reactRoot, {
+                    it.inputs.files(project.fileTree(reactRoot) {
                         it.exclude(*inputExcludes)
-                    }))
+                    })
                     it.outputs.dir(jsBundleDir)
                     it.outputs.dir(resourcesDir)
 
