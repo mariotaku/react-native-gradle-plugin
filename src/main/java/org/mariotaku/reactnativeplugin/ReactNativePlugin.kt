@@ -6,6 +6,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.logging.LogLevel
+import org.gradle.api.tasks.Exec
 import org.gradle.api.tasks.TaskContainer
 import org.mariotaku.reactnativeplugin.model.FlavorScope
 
@@ -47,6 +48,7 @@ class ReactNativePlugin : Plugin<Project> {
                 // React js bundle directories
                 val jsBundleDir = project.file("${project.buildDir}/react/$targetPath/assets")
                 val resourcesDir = project.file("${project.buildDir}/react/$targetPath/res")
+                val sourceMapFile = project.file("${project.buildDir}/react/$targetPath/sourcemap.js")
                 val jsBundleFile = project.file("$jsBundleDir/$bundleAssetName")
 
                 // Bundle task name for variant
@@ -61,11 +63,9 @@ class ReactNativePlugin : Plugin<Project> {
                     it.res.srcDir(resourcesDir)
                 }
 
-                val task = project.tasks.create(bundleJsAndAssetsTaskName, ReactNativeBundleTask::class.java) {
+                val task = project.tasks.create(bundleJsAndAssetsTaskName, Exec::class.java) {
                     it.group = "react-native"
                     it.description = "bundle JS and assets for $targetName."
-                    it.jsBundleDir = jsBundleDir
-                    it.resourcesDir = resourcesDir
 
                     it.standardOutput = LogOutputStream(project.logger, LogLevel.INFO)
                     it.errorOutput = LogOutputStream(project.logger, LogLevel.ERROR)
@@ -90,24 +90,31 @@ class ReactNativePlugin : Plugin<Project> {
                     // Set up dev mode
                     val devEnabled = buildTypeName.equals("debug", ignoreCase = true).toString()
 
-                    var extraArgs = extraPackagerArgs
-
-                    if (bundleConfig != null) {
-                        extraArgs += arrayOf("--config", bundleConfig)
-                    }
-
-                    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                        it.commandLine("cmd", "/c", *nodeExecutableAndArgs, cliPath, bundleCommand, "--platform", "android", "--dev", devEnabled,
-                                "--reset-cache", "--entry-file", entryFile, "--bundle-output", jsBundleFile, "--assets-dest", resourcesDir, *extraArgs)
-                    } else {
-                        it.commandLine(*nodeExecutableAndArgs, cliPath, bundleCommand, "--platform", "android", "--dev", devEnabled,
-                                "--reset-cache", "--entry-file", entryFile, "--bundle-output", jsBundleFile, "--assets-dest", resourcesDir, *extraArgs)
-                    }
-
                     it.enabled = config.bundleIn?.get(targetName) ?: if (buildTypeName == "release") {
                         config.bundleInRelease
                     } else {
                         config.bundleInDebug
+                    }
+
+                    it.commandLine = mutableListOf<Any?>().also { cmd ->
+
+                        if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                            cmd.add("cmd", "/c")
+                        }
+                        cmd.add(*nodeExecutableAndArgs, cliPath, bundleCommand)
+                        cmd.add("--platform", "android")
+                        cmd.add("--dev", devEnabled)
+                        cmd.add("--reset-cache")
+                        cmd.add("--entry-file", entryFile)
+                        cmd.add("--bundle-output", jsBundleFile.absolutePath)
+                        cmd.add("--assets-dest", resourcesDir.absolutePath)
+                        if (bundleConfig != null) {
+                            cmd.add("--config", bundleConfig)
+                        }
+                        if (config.generateSourceMap) {
+                            cmd.add("--sourcemap-output", sourceMapFile)
+                        }
+                        cmd.addAll(extraPackagerArgs)
                     }
 
                     if (extraEnvironments != null) {
@@ -124,6 +131,10 @@ class ReactNativePlugin : Plugin<Project> {
 
         fun TaskContainer.injectDependency(path: String, dependsOn: Task) {
             findByPath(path)?.dependsOn(dependsOn)
+        }
+
+        fun <T> MutableList<T>.add(vararg items: T) {
+            addAll(items)
         }
 
         val AndroidConfig.buildVariants: List<FlavorScope>

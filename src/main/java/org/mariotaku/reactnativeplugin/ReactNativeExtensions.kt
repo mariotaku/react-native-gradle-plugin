@@ -23,6 +23,8 @@ open class ReactNativeExtensions(factory: DefaultObjectFactory) {
     // whether to bundle JS and assets in release mode
     var bundleInRelease: Boolean = true
 
+    var generateSourceMap: Boolean = true
+
     var bundleIn: Map<String, Boolean>? = null
 
     // by default the gradle tasks are skipped if none of the JS files or assets change; this means
