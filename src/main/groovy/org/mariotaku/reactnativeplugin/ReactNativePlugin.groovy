@@ -65,8 +65,12 @@ class ReactNativePlugin implements Plugin<Project> {
 
                 // Set up inputs and outputs so gradle can cache the result
                 it.inputs.files(project.fileTree(reactRoot) {
-                    it.exclude(*inputExcludes)
+                    it.exclude("node_modules/")
+                    it.exclude(inputExcludes)
                 })
+                
+                println("RN Task inputs ${it.inputs.files.files}")
+                
                 it.outputs.dir(jsBundleDir)
                 it.outputs.dir(resourcesDir)
 

@@ -43,4 +43,11 @@ class ReactNativeExtensions {
         }
         extraEnvironments[key] = value
     }
+
+    void inputExcludes(String... patterns) {
+        if (inputExcludes == null) {
+            inputExcludes = new HashSet<>()
+        }
+        inputExcludes.addAll(patterns)
+    }
 }
