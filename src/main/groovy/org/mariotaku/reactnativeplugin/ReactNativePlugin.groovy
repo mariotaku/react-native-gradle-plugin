@@ -69,8 +69,6 @@ class ReactNativePlugin implements Plugin<Project> {
                     it.exclude(inputExcludes)
                 })
                 
-                println("RN Task inputs ${it.inputs.files.files}")
-                
                 it.outputs.dir(jsBundleDir)
                 it.outputs.dir(resourcesDir)
 
